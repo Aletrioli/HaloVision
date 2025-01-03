@@ -1,0 +1,71 @@
+const int trigPin = 9;
+const int echoPin = 10;
+
+
+// defines variables
+long duration;
+float distance1, distance2;
+float speed;
+unsigned long previousTime;
+
+
+// this is the value that controls how sensitive the speed detection is (in m/s)
+float speedThreshold = 10; // 5 m/s
+
+
+void setup() {
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT);  // Sets the echoPin as an Input
+  Serial.begin(9600);       // Starts the serial communication
+  previousTime = millis();  // Initialize the time
+}
+
+
+void loop() {
+  unsigned long currentTime = millis();
+ 
+  // Measure first distance
+  distance1 = measureDistance();
+ 
+  // Wait for a fixed interval (e.g., 100 ms)
+  delay(100);
+ 
+  // Measure second distance
+  distance2 = measureDistance();
+ 
+  // Calculate time difference in seconds
+  float timeDiff = (currentTime - previousTime) / 1000.0;
+ 
+  // Calculate speed in m/s
+  speed = abs(distance2 - distance1) / 100.0 / timeDiff; // Convert cm to m
+ 
+  // Print the speed
+  Serial.print("Speed: ");
+  Serial.print(speed, 2); // Print with 2 decimal places
+  Serial.println(" m/s");
+ 
+  // Check if speed is above threshold
+  if (speed > speedThreshold) {
+    Serial.println("FLASHING");
+  }
+ 
+  // Update previous time
+  previousTime = currentTime;
+}
+
+
+float measureDistance() {
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+ 
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+ 
+  // Calculating the distance in cm
+  return duration * 0.034 / 2;
+}
